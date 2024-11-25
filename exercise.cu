@@ -1,4 +1,4 @@
-#include <cuda_runtime.h>
+﻿#include <cuda_runtime.h>
 #include <iostream>
 #include <cmath>
 #include <chrono>
@@ -37,8 +37,8 @@ int main() {
     const int size = totalSize / nStreams;
     const size_t memSize = size * sizeof(float);
 
-    float *hA, *hB, *hC;
-    float *dA, *dB, *dC;
+    float* hA, * hB, * hC;
+    float* dA, * dB, * dC;
 
     // Allocate pinned memory on host
     cudaMallocHost(&hA, totalSize * sizeof(float));
@@ -77,7 +77,7 @@ int main() {
     }
 
     for (int i = 0; i < nStreams; ++i) {
-        kernel<<<nBlocks, nThreads, 0, streams[i]>>>(dA + i * size, dB + i * size, dC + i * size, size);
+        kernel << <nBlocks, nThreads, 0, streams[i] >> > (dA + i * size, dB + i * size, dC + i * size, size);
     }
 
     for (int i = 0; i < nStreams; ++i) {
