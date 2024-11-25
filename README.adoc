@@ -1,0 +1,23 @@
+= Cuda streams and pinned memory excercise =
+
+== Description ==
+
+This program compares the execution time of a specific mathematical computation both on CPU and GPU using CUDA Streams and pinned memory. The computation involves multiplying elements of two arrays and applying a summation of trigonometric functions over a fixed range.
+
+The program utilizes pinned memory (`cudaMallocHost`) to accelerate data transfer between host and device, and CUDA Streams to perform asynchronous data transfer and kernel execution. These optimizations significantly improve the performance of GPU computations by overlapping data transfer and processing.
+
+The arrays `A`, `B`, and `C` contain floating-point values initialized with trigonometric functions. The computation is performed on:
+1. CPU, using a sequential approach.
+2. GPU, using multiple CUDA Streams for parallel processing.
+
+The program outputs the execution time for CPU and GPU, and calculates the acceleration coefficient achieved by using the GPU.
+
+This program is developed in C++ using the CUDA runtime library. It is presented here as a source code file `exercise.cu`. The executable file can be generated using a CUDA-compatible development environment, such as Visual Studio or the NVIDIA CUDA toolkit.
+
+== Program structure ==
+
+The program source code is stored in the file `exercise.cu`, which includes the following functions:
+
+* **main**: Executes the program, initializes data, performs computations on both CPU and GPU, measures execution time and prints results.
+* **kernel**: The CUDA kernel function executed on the GPU for performing element-wise computations and summation.
+* **cpu_compute**: Performs the computation sequentially on the CPU for comparison.
