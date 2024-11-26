@@ -12,11 +12,11 @@ The arrays `A`, `B`, and `C` contain floating-point values initialized with trig
 
 The program outputs the execution time for CPU and GPU, and calculates the acceleration coefficient achieved by using the GPU.
 
-This program is developed in C++ using the CUDA runtime library. It is presented here as a source code file `exercise.cu`. The executable file can be generated using a CUDA-compatible development environment, such as Visual Studio or the NVIDIA CUDA toolkit.
+This program is developed in C++ using the CUDA runtime library. It is presented here as a source code file `kernel.cu`. The executable file can be generated using a CUDA-compatible development environment, such as Visual Studio or the NVIDIA CUDA toolkit.
 
 == Program structure ==
 
-The program source code is stored in the file `exercise.cu`, which includes the following functions:
+The program source code is stored in the file `kernel.cu`, which includes the following functions:
 
 * **main**: Executes the program, initializes data, performs computations on both CPU and GPU, measures execution time and prints results.
 * **kernel**: The CUDA kernel function executed on the GPU for performing element-wise computations and summation.
