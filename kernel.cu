@@ -47,40 +47,30 @@ cpu_compute(
     }
 }
 
-/**
-* Main function for the program.
-*/
-int
-main() {
+void
+testGPU(
+    const int nStreams,
+    float* hA,
+    float *hB,
+    float *hC_GPU, 
+    std::chrono::duration<float, std::milli> cpuDuration
+) {
     // ===================
     // DATA INITIALIZATION
     // ===================
-    const int nStreams = 4, nThreads = 512, totalSize = 512 * 50000, size = totalSize / nStreams;
+    const int nThreads = 512, totalSize = 512 * 50000, size = totalSize / nStreams;
     const size_t memSize = size * sizeof(float), arraySize = totalSize * sizeof(float);
 
-    float* hA, * hB, * hC, * hC_GPU;
     float* dA, * dB, * dC;
-
-    cudaMallocHost((void**)&hA, arraySize);
-    cudaMallocHost((void**)&hB, arraySize);
-    cudaMallocHost((void**)&hC, arraySize);
-    cudaMallocHost((void**)&hC_GPU, arraySize);
 
     cudaMalloc((void**)&dA, arraySize);
     cudaMalloc((void**)&dB, arraySize);
     cudaMalloc((void**)&dC, arraySize);
 
-    for (int i = 0; i < totalSize; ++i) {
-        hA[i] = sinf(i);
-        hB[i] = cosf(2.0f * i - 5.0f);
-        hC[i] = 0.0f;
-        hC_GPU[i] = 0.0f;
-    }
-
     // ================================== 
     // GPU computation and data maagement
     // ================================== 
-    cudaStream_t streams[nStreams];
+    cudaStream_t *streams = new cudaStream_t[nStreams];
 
     for (int i = 0; i < nStreams; ++i) {
         cudaStreamCreate(&streams[i]);
@@ -112,7 +102,53 @@ main() {
 
     float gpuTime;
     cudaEventElapsedTime(&gpuTime, start, stop);
-    std::cout << "GPU operation done!\n";
+    std::cout << "GPU operation done with number of streams: " << nStreams << ".\n";
+
+    std::cout << "GPU calculation time: " << gpuTime << " ms\n";
+    std::cout << "Rate: " << cpuDuration.count() / gpuTime << "x\n";
+
+    // ========
+    // CLEAN UP
+    // ========
+    for (int i = 0; i < nStreams; ++i) {
+        cudaStreamDestroy(streams[i]);
+    }
+
+    cudaFree(dA);
+    cudaFree(dB);
+    cudaFree(dC);
+
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
+
+    delete[] streams;
+}
+
+/**
+* Main function for the program.
+*/
+int
+main() {
+    // ===================
+    // DATA INITIALIZATION
+    // ===================
+    const int streamsNumbers[] = { 1, 2, 4 };
+    const int nThreads = 512, totalSize = 512 * 50000;
+    const size_t arraySize = totalSize * sizeof(float);
+
+    float* hA, * hB, * hC, * hC_GPU;
+
+    cudaMallocHost((void**)&hA, arraySize);
+    cudaMallocHost((void**)&hB, arraySize);
+    cudaMallocHost((void**)&hC, arraySize);
+    cudaMallocHost((void**)&hC_GPU, arraySize);
+
+    for (int i = 0; i < totalSize; ++i) {
+        hA[i] = sinf(i);
+        hB[i] = cosf(2.0f * i - 5.0f);
+        hC[i] = 0.0f;
+        hC_GPU[i] = 0.0f;
+    }
 
     // ===============
     // CPU COMPUTATION
@@ -123,31 +159,18 @@ main() {
 
     std::chrono::duration<float, std::milli> cpuDuration = cpuStop - cpuStart;
     std::cout << "CPU operation done!\n";
-
-
-    std::cout << "GPU calculation time: " << gpuTime << " ms\n";
     std::cout << "CPU calculation time: " << cpuDuration.count() << " ms\n";
-    std::cout << "Rate: " << cpuDuration.count() / gpuTime << "x\n";
-    std::cout << "Number of streams: " << nStreams << "\n";
+    std::cout << "Number of streams: 1\n\n";
 
-    // ========
-    // CLEAN UP
-    // ========
-    for (int i = 0; i < nStreams; ++i) {
-        cudaStreamDestroy(streams[i]);
-    }
+    // ===============
+    // GPU COMPUTATION
+    // ===============
+    for (int i = 0; i < 3; ++i) testGPU(streamsNumbers[i], hA, hB, hC_GPU, cpuDuration);
 
     cudaFreeHost(hA);
     cudaFreeHost(hB);
     cudaFreeHost(hC);
     cudaFreeHost(hC_GPU);
-
-    cudaFree(dA);
-    cudaFree(dB);
-    cudaFree(dC);
-
-    cudaEventDestroy(start);
-    cudaEventDestroy(stop);
 
     return 0;
 }
